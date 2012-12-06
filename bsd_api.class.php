@@ -1,5 +1,5 @@
 <?
-include 'config.php';
+require 'config.php';
 
 class BSD_API {
     
@@ -7,10 +7,10 @@ class BSD_API {
     var $api_secret;
 
     
-    public function __construct($api_id = '', $api_secret = '') {
+    public function __construct($api_id = null, $api_secret = null) {
         // store vars requied by BSD API
-        $this->api_id = empty($api_id) ? Config::api_id : $api_id;
-        $this->api_secret = empty($api_secret) ? Config::api_secret : $api_secret; 
+        $this->api_id =  isset($api_di) ? $api_id: Config::$api_id  ;
+        $this->api_secret = isset($api_secret) ? $api_secret:  Config::$api_secret  ; 
      
     }
 
@@ -94,20 +94,20 @@ class BSD_API {
         // loop until result is ready or until we give up
         do {
             // delay between calls (in seconds)
-            sleep(Config::deferred_result_call_interval); 
+            sleep(Config::$deferred_result_call_interval); 
             
             // check to see if result is ready
             $req = $this->call_api('get_deferred_results', array('deferred_id' => $deferred_id));
             
             // increment attempts counter
             $attempt++;
-        } while($req->getResponseCode() == Config::HTTP_CODE_DEFERRED_RESULT_COMPILING && $attempt < Config::deferred_result_call_max_attempts);
+        } while($req->getResponseCode() == Config::HTTP_CODE_DEFERRED_RESULT_COMPILING && $attempt < Config::$deferred_result_call_max_attempts);
         
         // if the response code isn't HTTP_CODE_OK then we didn't get the result we wanted
         if($req->getResponseCode() != Config::HTTP_CODE_OK) {
 
             // did we go over our "max attempts"?
-            if($iteration >= Config::deferred_result_call_max_attempts) {
+            if($iteration >= Config::$deferred_result_call_max_attempts) {
                 throw new Exception('Could not retrieve deferred result.  Max attempts reached.', 1);
             }
             // we must have received an unexpected HTTP code
